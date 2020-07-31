@@ -1,6 +1,7 @@
 import socket
 import hashlib
 import os
+import pickle
 
 # Set address and port
 serverAddress = "localhost"
@@ -24,7 +25,8 @@ while 1:
         connection_trials_count = 0
         # Send data
         print('Requesting %s' % message)
-        sent = sock.sendto(message, server_address)
+        pdata = pickle.dumps(message)
+        sent = sock.sendto(pdata, server_address)
         # Receive indefinitely
         while 1:
             # Receive response
