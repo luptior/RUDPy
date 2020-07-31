@@ -21,7 +21,7 @@ while 1:
 
     try:
         # Connection trials
-        connection_trials_count=0
+        connection_trials_count = 0
         # Send data
         print('Requesting %s' % message)
         sent = sock.sendto(message, server_address)
@@ -32,7 +32,7 @@ while 1:
             try:
                 data, server = sock.recvfrom(4096)
                 # Reset failed trials on successful transmission
-                connection_trials_count=0;
+                connection_trials_count = 0;
             except:
                 connection_trials_count += 1
                 if connection_trials_count < 5:
@@ -49,7 +49,7 @@ while 1:
             if data.split(delimiter)[0] == clientHash and seqNoFlag == int(seqNo == True):
                 packetLength = data.split(delimiter)[2]
                 if data.split(delimiter)[3] == "FNF":
-                    print ("Requested file could not be found on the server")
+                    print("Requested file could not be found on the server")
                     os.remove("r_" + userInput)
                 else:
                     f.write(data.split(delimiter)[3]);

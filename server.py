@@ -12,12 +12,12 @@ lossSimualation = False
 serverAddress = "localhost"
 serverPort = 10000
 
-
 # Delimiter
 delimiter = "|:|:|";
 
 # Seq number flag
 seqFlag = 0
+
 
 # Packet class definition
 class packet():
@@ -29,22 +29,22 @@ class packet():
     def make(self, data):
         self.msg = data
         self.length = str(len(data))
-        self.checksum=hashlib.sha1(data).hexdigest()
+        self.checksum = hashlib.sha1(data).hexdigest()
         print("Length: %s\nSequence number: %s" % (self.length, self.seqNo))
 
 
 # Connection handler
 def handleConnection(address, data):
-    drop_count=0
-    packet_count=0
+    drop_count = 0
+    packet_count = 0
     time.sleep(0.5)
     if lossSimualation:
-        packet_loss_percentage=float(input("Set PLP (0-99)%: "))/100.0
-        while packet_loss_percentage<0 or packet_loss_percentage >= 1:
-          packet_loss_percentage = float(input("Enter a valid PLP value. Set PLP (0-99)%: "))/100.0
+        packet_loss_percentage = float(input("Set PLP (0-99)%: ")) / 100.0
+        while packet_loss_percentage < 0 or packet_loss_percentage >= 1:
+            packet_loss_percentage = float(input("Enter a valid PLP value. Set PLP (0-99)%: ")) / 100.0
     else:
         packet_loss_percentage = 0
-    start_time=time.time()
+    start_time = time.time()
     print("Request started at: " + str(datetime.datetime.utcnow()))
     pkt = packet()
     threadSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -57,9 +57,10 @@ def handleConnection(address, data):
             data = fileRead.read()
             fileRead.close()
         except:
-            msg="FNF";
+            msg = "FNF";
             pkt.make(msg);
-            finalPacket = str(pkt.checksum) + delimiter + str(pkt.seqNo) + delimiter + str(pkt.length) + delimiter + pkt.msg
+            finalPacket = str(pkt.checksum) + delimiter + str(pkt.seqNo) + delimiter + str(
+                pkt.length) + delimiter + pkt.msg
             threadSock.sendto(finalPacket, address)
             print("Requested file could not be found, replied with FNF")
             return
@@ -94,10 +95,10 @@ def handleConnection(address, data):
                 drop_count += 1
         print("Packets served: " + str(packet_count))
         if lossSimualation:
-            print("Dropped packets: " + str(drop_count)+"\nComputed drop rate: %.2f" % float(float(drop_count)/float(packet_count)*100.0))
+            print("Dropped packets: " + str(drop_count) + "\nComputed drop rate: %.2f" % float(
+                float(drop_count) / float(packet_count) * 100.0))
     except:
         print("Internal server error")
-
 
 
 # Start - Connection initiation
