@@ -1,3 +1,4 @@
+import pickle
 import socket
 import threading
 import hashlib
@@ -26,15 +27,17 @@ class packet():
     seqNo = 0;
     msg = 0;
 
-    def make(self, data):
-        self.msg = data
-        self.length = str(len(data))
-        self.checksum = hashlib.sha1(data).hexdigest()
+    def make(self, pdata):
+        self.msg = pdata
+        self.length = str(len(pdata))
+        self.checksum = hashlib.sha1(pdata).hexdigest()
         print("Length: %s\nSequence number: %s" % (self.length, self.seqNo))
 
 
 # Connection handler
-def handleConnection(address, data):
+def handleConnection(address, pdata):
+
+    data = pickle.loads(pdata)
     drop_count = 0
     packet_count = 0
     time.sleep(0.5)
@@ -111,7 +114,7 @@ sock.bind(server_address)
 # Listening for requests indefinitely
 while True:
     print('Waiting to receive message')
-    data, address = sock.recvfrom(600)
-    connectionThread = threading.Thread(target=handleConnection, args=(address, data))
+    pdata, address = sock.recvfrom(600)
+    connectionThread = threading.Thread(target=handleConnection, args=(address, pdata))
     connectionThread.start()
-    print('Received %s bytes from %s' % (len(data), address))
+    print('Received %s bytes from %s' % (len(pdata), address))
