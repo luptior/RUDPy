@@ -9,7 +9,7 @@ serverAddress = "localhost"
 serverPort = 10000
 
 # Delimiter
-delimiter = "|:|:|";
+delimiter = "|:|:|"
 
 
 if __name__ == '__main__':
@@ -47,8 +47,9 @@ if __name__ == '__main__':
                         print("\nMaximum connection trials reached, skipping request\n")
                         os.remove("r_" + userInput)
                         break
+                data = pickle.loads(data)
                 seqNo = data.split(delimiter)[1]
-                clientHash = hashlib.sha1(data.split(delimiter)[3]).hexdigest()
+                clientHash = hashlib.sha1(pickle.dumps(data.split(delimiter)[3])).hexdigest()
                 print("Server hash: " + data.split(delimiter)[0])
                 print("Client hash: " + clientHash)
                 if data.split(delimiter)[0] == clientHash and seqNoFlag == int(seqNo == True):
@@ -60,7 +61,7 @@ if __name__ == '__main__':
                         f.write(data.split(delimiter)[3]);
                     print("Sequence number: %s\nLength: %s" % (seqNo, packetLength));
                     print("Server: %s on port %s" % server);
-                    sent = sock.sendto(str(seqNo) + "," + packetLength, server)
+                    sent = sock.sendto(pickle.dumps(str(seqNo) + "," + packetLength), server)
                 else:
                     print("Checksum mismatch detected, dropping packet")
                     print("Server: %s on port %s" % server);

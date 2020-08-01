@@ -13,10 +13,10 @@ class packet():
     seqNo = 0;
     msg = 0;
 
-    def make(self, pdata):
-        self.msg = pdata
-        self.length = str(len(pdata))
-        self.checksum = hashlib.sha1(pdata).hexdigest()
+    def make(self, data):
+        self.msg = data
+        self.length = str(len(data))
+        self.checksum = hashlib.sha1(pickle.dumps(data)).hexdigest()
         print("Length: %s\nSequence number: %s" % (self.length, self.seqNo))
 
 
@@ -65,6 +65,7 @@ def handleConnection(address, pdata):
             finalPacket = str(pkt.checksum) + delimiter + str(pkt.seqNo) + delimiter + str(
                 pkt.length) + delimiter + pkt.msg
 
+            finalPacket = pickle.dumps(finalPacket)
             # Send packet
             sent = threadSock.sendto(finalPacket, address)
             print('Sent %s bytes back to %s, awaiting acknowledgment..' % (sent, address))
