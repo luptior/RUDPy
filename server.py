@@ -37,57 +37,57 @@ def handleConnection(address, pdata):
     print("Request started at: " + str(datetime.datetime.utcnow()))
     pkt = packet()
     threadSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    try:
+    # try:
         # Read requested file
 
-        try:
-            print("Opening file %s" % data)
-            fileRead = open(data, 'r')
-            data = fileRead.read()
-            fileRead.close()
-        except:
-            msg = "FNF";
+    try:
+        print("Opening file %s" % data)
+        fileRead = open(data, 'r')
+        data = fileRead.read()
+        fileRead.close()
+    except:
+        msg = "FNF";
+        pkt.make(msg);
+        finalPacket = str(pkt.checksum) + delimiter + str(pkt.seqNo) + delimiter + str(
+            pkt.length) + delimiter + pkt.msg
+        threadSock.sendto(finalPacket, address)
+        print("Requested file could not be found, replied with FNF")
+        return
+
+    # Fragment and send file 500 byte by 500 byte
+    x = 0
+    while x < (len(data) / 500) + 1:
+        packet_count += 1
+        randomised_plp = random.random()
+        if packet_loss_percentage < randomised_plp:
+            msg = data[x * 500:x * 500 + 500];
             pkt.make(msg);
             finalPacket = str(pkt.checksum) + delimiter + str(pkt.seqNo) + delimiter + str(
                 pkt.length) + delimiter + pkt.msg
-            threadSock.sendto(finalPacket, address)
-            print("Requested file could not be found, replied with FNF")
-            return
 
-        # Fragment and send file 500 byte by 500 byte
-        x = 0
-        while x < (len(data) / 500) + 1:
-            packet_count += 1
-            randomised_plp = random.random()
-            if packet_loss_percentage < randomised_plp:
-                msg = data[x * 500:x * 500 + 500];
-                pkt.make(msg);
-                finalPacket = str(pkt.checksum) + delimiter + str(pkt.seqNo) + delimiter + str(
-                    pkt.length) + delimiter + pkt.msg
-
-                # Send packet
-                sent = threadSock.sendto(finalPacket, address)
-                print('Sent %s bytes back to %s, awaiting acknowledgment..' % (sent, address))
-                threadSock.settimeout(2)
-                try:
-                    ack, address = threadSock.recvfrom(100);
-                except:
-                    print("Time out reached, resending ...%s" % x);
-                    continue;
-                if ack.split(",")[0] == str(pkt.seqNo):
-                    pkt.seqNo = int(not pkt.seqNo)
-                    print("Acknowledged by: " + ack + "\nAcknowledged at: " + str(
-                        datetime.datetime.utcnow()) + "\nElapsed: " + str(time.time() - start_time))
-                    x += 1
-            else:
-                print("\n------------------------------\n\t\tDropped packet\n------------------------------\n")
-                drop_count += 1
-        print("Packets served: " + str(packet_count))
-        if lossSimualation:
-            print("Dropped packets: " + str(drop_count) + "\nComputed drop rate: %.2f" % float(
-                float(drop_count) / float(packet_count) * 100.0))
-    except:
-        print("Internal server error")
+            # Send packet
+            sent = threadSock.sendto(finalPacket, address)
+            print('Sent %s bytes back to %s, awaiting acknowledgment..' % (sent, address))
+            threadSock.settimeout(2)
+            try:
+                ack, address = threadSock.recvfrom(100);
+            except:
+                print("Time out reached, resending ...%s" % x);
+                continue;
+            if ack.split(",")[0] == str(pkt.seqNo):
+                pkt.seqNo = int(not pkt.seqNo)
+                print("Acknowledged by: " + ack + "\nAcknowledged at: " + str(
+                    datetime.datetime.utcnow()) + "\nElapsed: " + str(time.time() - start_time))
+                x += 1
+        else:
+            print("\n------------------------------\n\t\tDropped packet\n------------------------------\n")
+            drop_count += 1
+    print("Packets served: " + str(packet_count))
+    if lossSimualation:
+        print("Dropped packets: " + str(drop_count) + "\nComputed drop rate: %.2f" % float(
+            float(drop_count) / float(packet_count) * 100.0))
+    # except:
+    #     print("Internal server error")
 
 
 if __name__ == '__main__':
