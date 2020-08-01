@@ -27,7 +27,7 @@ if __name__ == '__main__':
             # Connection trials
             connection_trials_count = 0
             # Send data
-            print('Requesting %s' % message)
+            print(f'Requesting {message}')
             pdata = pickle.dumps(message)
             sent = sock.sendto(pdata, server_address)
             # Receive indefinitely
@@ -59,12 +59,12 @@ if __name__ == '__main__':
                         os.remove("r_" + userInput)
                     else:
                         f.write(data.split(delimiter)[3]);
-                    print("Sequence number: %s\nLength: %s" % (seqNo, packetLength));
-                    print("Server: %s on port %s" % server);
+                    print(f"Sequence number: {seqNo}\nLength: {packetLength}");
+                    print(f"Server: %s on port {server}");
                     sent = sock.sendto(pickle.dumps(str(seqNo) + "," + packetLength), server)
                 else:
                     print("Checksum mismatch detected, dropping packet")
-                    print("Server: %s on port %s" % server);
+                    print(f"Server: %s on port {server}");
                     continue;
                 if int(packetLength) < 500:
                     seqNo = int(not seqNo)

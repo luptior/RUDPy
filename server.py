@@ -17,7 +17,7 @@ class packet():
         self.msg = data
         self.length = str(len(data))
         self.checksum = hashlib.sha1(pickle.dumps(data)).hexdigest()
-        print("Length: %s\nSequence number: %s" % (self.length, self.seqNo))
+        print(f"Length: {self.length}\nSequence number: {self.seqNo}")
 
 
 # Connection handler
@@ -68,7 +68,7 @@ def handleConnection(address, pdata):
             finalPacket = pickle.dumps(finalPacket)
             # Send packet
             sent = threadSock.sendto(finalPacket, address)
-            print('Sent %s bytes back to %s, awaiting acknowledgment..' % (sent, address))
+            print(f'Sent {sent} bytes back to {address}, awaiting acknowledgment..')
             threadSock.settimeout(2)
             try:
                 ack, address = threadSock.recvfrom(100);
@@ -77,16 +77,17 @@ def handleConnection(address, pdata):
                 continue;
             if ack.split(",")[0] == str(pkt.seqNo):
                 pkt.seqNo = int(not pkt.seqNo)
-                print("Acknowledged by: " + ack + "\nAcknowledged at: " + str(
-                    datetime.datetime.utcnow()) + "\nElapsed: " + str(time.time() - start_time))
+                print(f"Acknowledged by: {ack} "
+                      f"\nAcknowledged at: { datetime.datetime.utcnow()} "
+                      f"\nElapsed: {time.time() - start_time}")
                 x += 1
         else:
             print("\n------------------------------\n\t\tDropped packet\n------------------------------\n")
             drop_count += 1
     print("Packets served: " + str(packet_count))
     if lossSimualation:
-        print("Dropped packets: " + str(drop_count) + "\nComputed drop rate: %.2f" % float(
-            float(drop_count) / float(packet_count) * 100.0))
+        print(f"Dropped packets:  {str(drop_count)} "
+              f"\nComputed drop rate: {float(drop_count) / float(packet_count) * 100.0}" )
     # except:
     #     print("Internal server error")
 
