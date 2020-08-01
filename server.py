@@ -6,20 +6,6 @@ import time
 import datetime
 import random
 
-# PLP Simulation settings
-lossSimualation = False
-
-# Set address and port
-serverAddress = "localhost"
-serverPort = 10000
-
-# Delimiter
-delimiter = "|:|:|";
-
-# Seq number flag
-seqFlag = 0
-
-
 # Packet class definition
 class packet():
     checksum = 0;
@@ -104,17 +90,32 @@ def handleConnection(address, pdata):
         print("Internal server error")
 
 
-# Start - Connection initiation
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-# Bind the socket to the port
-server_address = (serverAddress, serverPort)
-print('Starting up on %s port %s' % server_address)
-sock.bind(server_address)
+if __name__ == '__main__':
 
-# Listening for requests indefinitely
-while True:
-    print('Waiting to receive message')
-    pdata, address = sock.recvfrom(600)
-    connectionThread = threading.Thread(target=handleConnection, args=(address, pdata))
-    connectionThread.start()
-    print('Received %s bytes from %s' % (len(pdata), address))
+    # PLP Simulation settings
+    lossSimualation = False
+
+    # Set address and port
+    serverAddress = "localhost"
+    serverPort = 10000
+
+    # Delimiter
+    delimiter = "|:|:|";
+
+    # Seq number flag
+    seqFlag = 0
+
+    # Start - Connection initiation
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    # Bind the socket to the port
+    server_address = (serverAddress, serverPort)
+    print('Starting up on %s port %s' % server_address)
+    sock.bind(server_address)
+
+    # Listening for requests indefinitely
+    while True:
+        print('Waiting to receive message')
+        pdata, address = sock.recvfrom(600)
+        connectionThread = threading.Thread(target=handleConnection, args=(address, pdata))
+        connectionThread.start()
+        print('Received %s bytes from %s' % (len(pdata), address))
