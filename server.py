@@ -1,10 +1,16 @@
+"""
+server reads file and send to client
+
+"""
+
+import datetime
+import hashlib
 import pickle
 import socket
 import threading
-import hashlib
 import time
-import datetime
-import random
+import numpy as np
+
 
 # Packet class definition
 class packet():
@@ -14,18 +20,30 @@ class packet():
     msg = 0
 
     def make(self, data):
-        self.msg = data
-        self.length = str(len(data))
-        self.checksum = hashlib.sha1(pickle.dumps(data)).hexdigest()
-        print(f"Length: {self.length}\nSequence number: {self.seqNo}")
+        if isinstance(data, bytes):
+            self.msg = data
+            self.length = str(len(data))
+            self.checksum = hashlib.sha1(self.msg).hexdigest()
+            print(f"Length: {self.length}\nSequence number: {self.seqNo}")
+        elif isinstance(data, str):
+            self.msg = pickle.dumps(data)
+            self.length = str(len(data))
+            self.checksum = hashlib.sha1(self.msg).hexdigest()
+            print(f"Length: {self.length}\nSequence number: {self.seqNo}")
+
+    def serialize(self) -> str:
+        serialized_packet = str(self.checksum) + delimiter + \
+                            str(self.seqNo) + delimiter + \
+                            str(self.length) + delimiter + \
+                            str(self.msg)
+        return serialized_packet
 
 
 # Connection handler
-def handleConnection(address, pdata):
-
-    data = pickle.loads(pdata)
+def handleConnection(addr, ):
     drop_count = 0
     packet_count = 0
+    fragment_size = 500
     time.sleep(0.5)
     if lossSimualation:
         packet_loss_percentage = float(input("Set PLP (0-99)%: ")) / 100.0
@@ -37,69 +55,59 @@ def handleConnection(address, pdata):
     print("Request started at: " + str(datetime.datetime.utcnow()))
     pkt = packet()
     threadSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    # try:
-        # Read requested file
 
-    try:
-        print("Opening file %s" % data)
-        fileRead = open(data, 'r')
-        data = fileRead.read()
-        fileRead.close()
-    except:
-        msg = "FNF"
-        pkt.make(msg)
-        finalPacket = str(pkt.checksum) + delimiter + str(pkt.seqNo) + delimiter + str(
-            pkt.length) + delimiter + pkt.msg
-        threadSock.sendto(finalPacket, address)
-        print("Requested file could not be found, replied with FNF")
-        return
+    data = np.random.randint(100, size=[3, 4, 5])
+    data = pickle.dumps(data)
 
-    # Fragment and send file 500 byte by 500 byte
+    # Fragment and send file fragment_size byte
     x = 0
-    while x < (len(data) / 500) + 1:
+    while x < int(len(data) / fragment_size) + 1:
+        print(f"Sending package {x}")
         packet_count += 1
-        randomised_plp = random.random()
+        randomised_plp = np.random.random()
         if packet_loss_percentage < randomised_plp:
-            msg = data[x * 500:x * 500 + 500]
-            pkt.make(msg)
-            finalPacket = str(pkt.checksum) + delimiter + str(pkt.seqNo) + delimiter + str(
-                pkt.length) + delimiter + pkt.msg
 
-            finalPacket = pickle.dumps(finalPacket)
+            # extract the partial dat to be msg
+            msg = data[x * fragment_size: (x + 1) * fragment_size]
+            pkt.make(msg)
+            serialized_pkt = pickle.dumps(pkt.serialize())
+
             # Send packet
-            sent = threadSock.sendto(finalPacket, address)
-            print(f'Sent {sent} bytes back to {address}, awaiting acknowledgment..')
-            threadSock.settimeout(2)
+            sent = threadSock.sendto(serialized_pkt, addr)
+            print(f'Sent {sent} bytes back to {addr}, awaiting acknowledgment..')
+            threadSock.settimeout(10)
+
+            # Wait for Ack
             try:
-                ack, address = threadSock.recvfrom(100)
+                ack, addr = threadSock.recvfrom(100)
+                ack = pickle.loads(ack)
             except:
                 print("Time out reached, resending ...%s" % x)
                 continue
             if ack.split(",")[0] == str(pkt.seqNo):
                 pkt.seqNo = int(not pkt.seqNo)
-                print(f"Acknowledged by: {ack} "
-                      f"\nAcknowledged at: { datetime.datetime.utcnow()} "
-                      f"\nElapsed: {time.time() - start_time}")
+                print(f"Acknowledged by: {ack} ")
                 x += 1
         else:
-            print("\n------------------------------\n\t\tDropped packet\n------------------------------\n")
+            print("Dropped packet\n")
             drop_count += 1
-    print("Packets served: " + str(packet_count))
+
+    print(f"Packets served: {packet_count}")
+
     if lossSimualation:
         print(f"Dropped packets:  {str(drop_count)} "
-              f"\nComputed drop rate: {float(drop_count) / float(packet_count) * 100.0}" )
-    # except:
-    #     print("Internal server error")
+              f"\nComputed drop rate: {float(drop_count) / float(packet_count) * 100.0}")
+
+    print("Sending finished.")
 
 
 if __name__ == '__main__':
-
     # PLP Simulation settings
     lossSimualation = False
 
-    # Set address and port
+    # Set addr and port
     serverAddress = "localhost"
-    serverPort = 10000
+    serverPort = 8233
 
     # Delimiter
     delimiter = "|:|:|"
@@ -115,9 +123,9 @@ if __name__ == '__main__':
     sock.bind(server_address)
 
     # Listening for requests indefinitely
-    while True:
-        print('Waiting to receive message')
-        pdata, address = sock.recvfrom(600)
-        connectionThread = threading.Thread(target=handleConnection, args=(address, pdata))
-        connectionThread.start()
-        print('Received %s bytes from %s' % (len(pdata), address))
+
+    print('Waiting to receive message')
+    pdata, address = sock.recvfrom(600)
+    connectionThread = threading.Thread(target=handleConnection, args=(address,))
+    connectionThread.start()
+    print('Received %s bytes from %s' % (len(pdata), address))
