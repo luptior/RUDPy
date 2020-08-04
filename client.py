@@ -33,7 +33,6 @@ if __name__ == '__main__':
     sock.settimeout(10)
 
     # no actual meaning just tell the sender starts sending message
-    seqNoFlag = 0
 
     try:
         # Connection trials
@@ -65,14 +64,14 @@ if __name__ == '__main__':
                     break
 
             pkt = packet()
-            print(pdata)
             pkt.deserialize(pdata)
 
             clientHash = hashlib.sha1(pkt.get_msg()).hexdigest()
 
-            if pkt.get_checksum() == clientHash and seqNoFlag == int(pkt.get_seq() == True):
+            if pkt.get_checksum() == clientHash:
 
                 data_store += pkt.get_msg()
+
                 print(f"Sequence number: {pkt.get_seq()} Length: {pkt.get_length()}")
                 # print(f"Server: %s on port {server}")
 
@@ -93,4 +92,4 @@ if __name__ == '__main__':
     finally:
         print("Closing socket")
         sock.close()
-        print(data_store.decode())
+        print(np.frombuffer(data_store, int).reshape(5,6,5))

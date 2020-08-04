@@ -31,7 +31,7 @@ def handleConnection(addr, ):
     pkt = packet()
     threadSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-    data = np.random.randint(100, size=[3, 4]).tobytes()
+    data = np.random.randint(100, size=[5, 6, 5]).tobytes()
 
     # Fragment and send file fragment_size byte
     x = 0
