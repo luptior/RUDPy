@@ -32,10 +32,10 @@ class packet():
             print(f"Length: {self.length}\nSequence number: {self.seqNo}")
 
     def serialize(self) -> str:
-        serialized_packet = str(self.checksum) + delimiter + \
-                            str(self.seqNo) + delimiter + \
-                            str(self.length) + delimiter + \
-                            str(self.msg)
+        serialized_packet = delimiter.join([str(self.checksum),
+                                            str(self.seqNo),
+                                            str(self.length),
+                                            str(self.msg)])
         return serialized_packet
 
 
