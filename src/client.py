@@ -8,7 +8,7 @@ import hashlib
 import pickle
 import numpy as np
 
-from src.packet import packet
+from packet import packet
 
 ## some constants
 
