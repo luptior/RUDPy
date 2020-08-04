@@ -80,6 +80,7 @@ if __name__ == '__main__':
     # Set addr and port
     serverAddress = "localhost"
     serverPort = 8233
+    client_port = 10500
 
     # Seq number flag
     seqFlag = 0
@@ -93,8 +94,8 @@ if __name__ == '__main__':
 
     # Listening for requests indefinitely
 
-    print('Waiting to receive message')
-    pdata, address = sock.recvfrom(600)
-    connectionThread = threading.Thread(target=handleConnection, args=(address,))
+    # print('Waiting to receive message')
+    # pdata, address = sock.recvfrom(600)
+    connectionThread = threading.Thread(target=handleConnection, args=((serverAddress, client_port),))
     connectionThread.start()
-    print('Received %s bytes from %s' % (len(pdata), address))
+    # print('Received %s bytes from %s' % (len(pdata), address))
