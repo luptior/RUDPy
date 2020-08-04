@@ -14,7 +14,7 @@ from reedsolo import RSCodec, ReedSolomonError
 
 
 # Packet class definition
-class Packet():
+class Packet:
     checksum = 0
     length = 0
     seqNo = 0
