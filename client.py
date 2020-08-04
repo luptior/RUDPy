@@ -77,7 +77,7 @@ if __name__ == '__main__':
                 # print(f"Server: %s on port {server}")
 
                 # send ack to sender
-                ack_deq_no = f"{pkt.get_seq()} , {pkt.get_length()}"
+                ack_deq_no = f"{pkt.get_seq()},{pkt.get_length()}"
                 sent = sock.sendto(pickle.dumps(ack_deq_no), server)
                 print(f'Sent ack for {pkt.get_seq()}')
             else:
