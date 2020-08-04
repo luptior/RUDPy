@@ -5,7 +5,6 @@ client request data
 
 import socket
 import hashlib
-import os
 import pickle
 import numpy as np
 from reedsolo import RSCodec, ReedSolomonError

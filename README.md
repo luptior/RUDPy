@@ -3,6 +3,10 @@
 
 # Intro:
 A reliable UDP client/server implementation in Python. Updated to Python 3.
+Dependency:
+```yaml
+numpy, reedsolo
+```
 
 # Added Feature:
 1, Support Reed Solomon coding
