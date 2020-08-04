@@ -18,11 +18,52 @@ class Packet:
 
     def __init__(self):
         self.rsc = RSCodec(10)  # default to be 10
-        self.delimiter = b"|:|:|"
-        self.checksum = 0
+        self.delimiter = b"|:|:|" # type bytes
+        self.checksum = 0 # type String
         self.length = str(0)
         self.seqNo = 0
         self.msg = 0
+
+    # return checksum as string
+    def get_checksum(self) -> str:
+        if isinstance(self.checksum, str):
+            return self.checksum
+        elif isinstance(self.checksum, bytes) or isinstance(self.checksum, bytearray):
+            return self.checksum.decode("utf-8")
+
+    # return length as int
+    def get_length(self) -> int:
+        if isinstance(self.length, int):
+            return self.length
+        elif isinstance(self.length, bytes) or isinstance(self.length, bytearray):
+            return int(self.length.decode("utf-8"))
+        elif isinstance(self.length, str):
+            if "b'" in self.length:
+                self.length = eval(self.length)
+                return self.get_length()
+            else:
+                return int(self.length)
+
+    # return length as int
+    def get_seq(self) -> int:
+        if isinstance(self.seqNo, int):
+            return self.seqNo
+        elif isinstance(self.seqNo, bytes) or isinstance(self.seqNo, bytearray):
+            return int(self.seqNo.decode("utf-8"))
+        elif isinstance(self.seqNo, str):
+            if "b'" in self.seqNo:
+                self.seqNo = eval(self.seqNo)
+                return self.get_seq()
+            else:
+                return int(self.seqNo)
+
+    def get_msg(self) -> bytes:
+        if isinstance(self.msg, bytes):
+            return self.msg
+        elif isinstance(self.msg, bytearray):
+            return self.msg.decode("utf-8").encode("utf-8")
+        elif isinstance(self.msg, str):
+            return self.msg.encode("utf-8")
 
     def make(self, data):
         if isinstance(data, bytes):
@@ -31,16 +72,16 @@ class Packet:
             self.checksum = hashlib.sha1(self.msg).hexdigest()
             print(f"Length: {self.length}\nSequence number: {self.seqNo}")
         elif isinstance(data, str):
-            self.msg = pickle.dumps(data)
+            self.msg = data.encode("utf-8")
             self.length = str(len(data))
             self.checksum = hashlib.sha1(self.msg).hexdigest()
             print(f"Length: {self.length}\nSequence number: {self.seqNo}")
 
     def tobytes(self) -> bytes:
-        elements = [self.checksum,
-                    str(self.seqNo) if not isinstance(self.seqNo, str) else self.seqNo,
-                    str(self.length) if not isinstance(self.length, str) else self.length,
-                    self.msg]
+        elements = [self.get_checksum(),
+                    str(self.get_seq()),
+                    str(self.get_length()),
+                    self.get_msg().decode('utf-8')]
 
         elements = [ x if isinstance(x, bytes) else x.encode('utf-8') for x in elements ]
 
@@ -72,13 +113,12 @@ def handleConnection(addr, ):
             packet_loss_percentage = float(input("Enter a valid PLP value. Set PLP (0-99)%: ")) / 100.0
     else:
         packet_loss_percentage = 0
-    start_time = time.time()
+
     print("Request started at: " + str(datetime.datetime.utcnow()))
     pkt = Packet()
     threadSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-    data = np.random.randint(100, size=[3, 4, 5])
-    data = pickle.dumps(data)
+    data = np.random.randint(100, size=[3, 4]).tobytes()
 
     # Fragment and send file fragment_size byte
     x = 0
@@ -91,7 +131,7 @@ def handleConnection(addr, ):
             # extract the partial dat to be msg
             msg = data[x * fragment_size: (x + 1) * fragment_size]
             pkt.make(msg)
-            serialized_pkt = pickle.dumps(pkt.tobytes())
+            serialized_pkt = pkt.serialize()
 
             # Send Packet
             sent = threadSock.sendto(serialized_pkt, addr)
