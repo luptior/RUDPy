@@ -15,10 +15,14 @@ from reedsolo import RSCodec, ReedSolomonError
 
 # Packet class definition
 class Packet:
-    checksum = 0
-    length = 0
-    seqNo = 0
-    msg = 0
+
+    def __init__(self):
+        self.rsc = RSCodec(10)  # default to be 10
+        self.delimiter = b"|:|:|"
+        self.checksum = 0
+        self.length = str(0)
+        self.seqNo = 0
+        self.msg = 0
 
     def make(self, data):
         if isinstance(data, bytes):
@@ -32,12 +36,28 @@ class Packet:
             self.checksum = hashlib.sha1(self.msg).hexdigest()
             print(f"Length: {self.length}\nSequence number: {self.seqNo}")
 
-    def to_str(self) -> str:
-        serialized_packet = delimiter.join([str(self.checksum),
-                                            str(self.seqNo),
-                                            str(self.length),
-                                            str(self.msg)])
+    def tobytes(self) -> bytes:
+        elements = [self.checksum,
+                    str(self.seqNo) if not isinstance(self.seqNo, str) else self.seqNo,
+                    str(self.length) if not isinstance(self.length, str) else self.length,
+                    self.msg]
+
+        elements = [ x if isinstance(x, bytes) else x.encode('utf-8') for x in elements ]
+
+        serialized_packet = self.delimiter.join(elements)
         return serialized_packet
+
+    def serialize(self) -> bytes:
+        # encode the whole object string to bytes
+        # then add RS coding
+        return self.rsc.encode(self.tobytes())
+
+    def deserialize(self, input: bytearray):
+        data = self.rsc.decode(input)[0].split(self.delimiter)
+        self.checksum, self.length, self.seqNo, self.msg = [x.decode().encode() for x in data]
+        self.length = str(self.length)
+        self.seqNo = str(self.seqNo)
+        return
 
 
 # Connection handler
@@ -71,7 +91,7 @@ def handleConnection(addr, ):
             # extract the partial dat to be msg
             msg = data[x * fragment_size: (x + 1) * fragment_size]
             pkt.make(msg)
-            serialized_pkt = pickle.dumps(pkt.to_str())
+            serialized_pkt = pickle.dumps(pkt.tobytes())
 
             # Send Packet
             sent = threadSock.sendto(serialized_pkt, addr)
@@ -109,9 +129,6 @@ if __name__ == '__main__':
     # Set addr and port
     serverAddress = "localhost"
     serverPort = 8233
-
-    # Delimiter
-    delimiter = "|:|:|"
 
     # Seq number flag
     seqFlag = 0
