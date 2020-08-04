@@ -4,8 +4,8 @@
 # Intro:
 A reliable UDP client/server implementation in Python. Updated to Python 3.
 
-#Added Feature:
+# Added Feature:
 1, Support Reed Solomon coding
 
-#TODO:
+# TODO:
 1, in order delivery
