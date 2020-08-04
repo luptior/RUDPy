@@ -10,10 +10,11 @@ import socket
 import threading
 import time
 import numpy as np
+from reedsolo import RSCodec, ReedSolomonError
 
 
 # Packet class definition
-class packet():
+class Packet():
     checksum = 0
     length = 0
     seqNo = 0
@@ -53,7 +54,7 @@ def handleConnection(addr, ):
         packet_loss_percentage = 0
     start_time = time.time()
     print("Request started at: " + str(datetime.datetime.utcnow()))
-    pkt = packet()
+    pkt = Packet()
     threadSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     data = np.random.randint(100, size=[3, 4, 5])
@@ -72,7 +73,7 @@ def handleConnection(addr, ):
             pkt.make(msg)
             serialized_pkt = pickle.dumps(pkt.serialize())
 
-            # Send packet
+            # Send Packet
             sent = threadSock.sendto(serialized_pkt, addr)
             print(f'Sent {sent} bytes back to {addr}, awaiting acknowledgment..')
             threadSock.settimeout(10)
@@ -89,7 +90,7 @@ def handleConnection(addr, ):
                 print(f"Acknowledged by: {ack} ")
                 x += 1
         else:
-            print("Dropped packet\n")
+            print("Dropped Packet\n")
             drop_count += 1
 
     print(f"Packets served: {packet_count}")
