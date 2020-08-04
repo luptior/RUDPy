@@ -78,7 +78,7 @@ if __name__ == '__main__':
     lossSimualation = False
 
     # Set addr and port
-    serverAddress = "localhost"
+    IP = "localhost"
     serverPort = 8233
     client_port = 10500
 
@@ -88,7 +88,7 @@ if __name__ == '__main__':
     # Start - Connection initiation
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     # Bind the socket to the port
-    server_address = (serverAddress, serverPort)
+    server_address = (IP, serverPort)
     print('Starting up on %s port %s' % server_address)
     sock.bind(server_address)
 
@@ -96,6 +96,6 @@ if __name__ == '__main__':
 
     # print('Waiting to receive message')
     # pdata, address = sock.recvfrom(600)
-    connectionThread = threading.Thread(target=handleConnection, args=((serverAddress, client_port),))
+    connectionThread = threading.Thread(target=handleConnection, args=((IP, client_port),))
     connectionThread.start()
     # print('Received %s bytes from %s' % (len(pdata), address))

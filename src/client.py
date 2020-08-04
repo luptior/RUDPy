@@ -13,7 +13,7 @@ from packet import packet
 ## some constants
 
 # Set addr and port
-server_address = "localhost"
+IP = "localhost"
 server_port = 8233
 client_port = 10500
 fragment_size = 500
@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
     # while True:  # infinite loop if no exit signal
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.bind((server_address, client_port))
+    sock.bind((IP, client_port))
     sock.settimeout(10)
 
     # no actual meaning just tell the sender starts sending message
@@ -41,7 +41,7 @@ if __name__ == '__main__':
         # Send first message to request sending
         print(f'Requesting')
         # pdata = pickle.dumps("init")
-        # sent = sock.sendto(pdata, (server_address, server_port))
+        # sent = sock.sendto(pdata, (IP, server_port))
         # print(f'Sent initial request')
 
         # Receive indefinitely
