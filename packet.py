@@ -89,9 +89,22 @@ class packet:
 
     def deserialize(self, input: bytearray):
         data = self.rsc.decode(input)[0].split(self.delimiter)
-        self.checksum, self.length, self.seqNo, self.msg = [x.decode().encode() for x in data]
+        self.checksum, self.seqNo, self.length, self.msg = [x.decode().encode() for x in data]
         self.length = str(self.length)
         self.seqNo = str(self.seqNo)
         return
 
 
+if __name__ == '__main__':
+    pkt = packet()
+    pkt2 = packet()
+    data = np.random.randint(100, size = (2,3)).tobytes()
+
+    pkt.make(data)
+
+    print(data)
+    print(pkt.serialize())
+    pkt2.deserialize(pkt.serialize())
+    print(pkt2.get_length())
+    print(pkt2.get_seq())
+    print(pkt2.get_msg())
