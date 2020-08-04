@@ -7,9 +7,8 @@ import socket
 import hashlib
 import pickle
 import numpy as np
-from reedsolo import RSCodec, ReedSolomonError
 
-from packet import packet
+from src.packet import packet
 
 ## some constants
 

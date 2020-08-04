@@ -4,14 +4,12 @@ server reads file and send to client
 """
 
 import datetime
-import hashlib
 import pickle
 import socket
 import threading
 import time
 import numpy as np
-from reedsolo import RSCodec, ReedSolomonError
-from packet import packet
+from src.packet import packet
 
 
 # Connection handler
