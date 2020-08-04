@@ -79,7 +79,7 @@ if __name__ == '__main__':
 
     # Set addr and port
     IP = "localhost"
-    serverPort = 8233
+    server_port = 8233
     client_port = 10500
 
     # Seq number flag
@@ -88,7 +88,7 @@ if __name__ == '__main__':
     # Start - Connection initiation
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     # Bind the socket to the port
-    server_address = (IP, serverPort)
+    server_address = (IP, server_port)
     print('Starting up on %s port %s' % server_address)
     sock.bind(server_address)
 
