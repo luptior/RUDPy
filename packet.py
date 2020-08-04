@@ -7,10 +7,8 @@ import time
 import numpy as np
 from reedsolo import RSCodec, ReedSolomonError
 
-from packet import Packet
-
 # Packet class definition
-class Packet:
+class packet:
 
     def __init__(self):
         self.rsc = RSCodec(10)  # default to be 10

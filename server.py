@@ -11,6 +11,7 @@ import threading
 import time
 import numpy as np
 from reedsolo import RSCodec, ReedSolomonError
+from packet import packet
 
 
 # Connection handler
@@ -27,7 +28,7 @@ def handleConnection(addr, ):
         packet_loss_percentage = 0
 
     print("Request started at: " + str(datetime.datetime.utcnow()))
-    pkt = Packet()
+    pkt = packet()
     threadSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     data = np.random.randint(100, size=[3, 4]).tobytes()
@@ -45,7 +46,7 @@ def handleConnection(addr, ):
             pkt.make(msg)
             serialized_pkt = pkt.serialize()
 
-            # Send Packet
+            # Send packet
             sent = threadSock.sendto(serialized_pkt, addr)
             print(f'Sent {sent} bytes back to {addr}, awaiting acknowledgment..')
             threadSock.settimeout(10)
@@ -62,10 +63,10 @@ def handleConnection(addr, ):
                 print(f"Acknowledged by: {ack} ")
                 x += 1
         else:
-            print("Dropped Packet\n")
+            print("Dropped packet\n")
             drop_count += 1
 
-    print(f"Packets served: {packet_count}")
+    print(f"packets served: {packet_count}")
 
     if lossSimualation:
         print(f"Dropped packets:  {str(drop_count)} "

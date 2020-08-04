@@ -10,6 +10,8 @@ import pickle
 import numpy as np
 from reedsolo import RSCodec, ReedSolomonError
 
+from packet import packet
+
 ## some constants
 
 # Set addr and port
@@ -62,38 +64,33 @@ if __name__ == '__main__':
                     # os.remove("r_" + userInput)
                     break
 
-            data = pickle.loads(pdata)
-            pkt_checksum = data.split(delimiter)[0]
-            seqNo = data.split(delimiter)[1]
-            packetLength = data.split(delimiter)[2]
-            msg = eval(data.split(delimiter)[3]) # supposed to be bytes
+            pkt = packet()
+            print(pdata)
+            pkt.deserialize(pdata)
 
-            clientHash = hashlib.sha1(msg).hexdigest()
+            clientHash = hashlib.sha1(pkt.get_msg()).hexdigest()
 
-            if pkt_checksum == clientHash and seqNoFlag == int(seqNo == True):
-                if msg == "FNF":
-                    print("Requested file could not be found on the server")
-                else:
-                    # append data
-                    data_store += msg
-                print(f"Sequence number: {seqNo} Length: {packetLength}")
+            if pkt.get_checksum() == clientHash and seqNoFlag == int(pkt.get_seq() == True):
+
+                data_store += pkt.get_msg()
+                print(f"Sequence number: {pkt.get_seq()} Length: {pkt.get_length()}")
                 # print(f"Server: %s on port {server}")
 
                 # send ack to sender
-                ack_deq_no = str(seqNo) + "," + packetLength
+                ack_deq_no = f"{pkt.get_seq()} , {pkt.get_length()}"
                 sent = sock.sendto(pickle.dumps(ack_deq_no), server)
-                print(f'Sent ack for {seqNo}')
+                print(f'Sent ack for {pkt.get_seq()}')
             else:
-                print("Checksum mismatch detected, dropping Packet")
-                print("Server hash: " + data.split(delimiter)[0] + " Client hash: " + clientHash)
+                print("Checksum mismatch detected, dropping packet")
+                print("Server hash: " + pkt.get_checksum() + " Client hash: " + clientHash)
                 print(f"Server: %s on port {server}")
                 continue
 
-            if int(packetLength) < fragment_size:
-                seqNo = int(not seqNo)
+            if pkt.get_length() < fragment_size:
+                pkt.seqNo = int(not pkt.get_length())
                 break
 
     finally:
         print("Closing socket")
         sock.close()
-        print(pickle.loads(data_store))
+        print(data_store.decode())
