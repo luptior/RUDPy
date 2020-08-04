@@ -32,7 +32,7 @@ class Packet:
             self.checksum = hashlib.sha1(self.msg).hexdigest()
             print(f"Length: {self.length}\nSequence number: {self.seqNo}")
 
-    def serialize(self) -> str:
+    def to_str(self) -> str:
         serialized_packet = delimiter.join([str(self.checksum),
                                             str(self.seqNo),
                                             str(self.length),
@@ -71,7 +71,7 @@ def handleConnection(addr, ):
             # extract the partial dat to be msg
             msg = data[x * fragment_size: (x + 1) * fragment_size]
             pkt.make(msg)
-            serialized_pkt = pickle.dumps(pkt.serialize())
+            serialized_pkt = pickle.dumps(pkt.to_str())
 
             # Send Packet
             sent = threadSock.sendto(serialized_pkt, addr)
