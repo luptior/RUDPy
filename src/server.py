@@ -13,7 +13,7 @@ from packet import packet
 
 
 # Connection handler
-def handle_connection(addr, fragment_size=500):
+def sending_data(addr, fragment_size=500):
     drop_count = 0
     packet_count = 0
 
@@ -36,7 +36,7 @@ def handle_connection(addr, fragment_size=500):
 
     for counter in seqs:
 
-        title = f"title_{counter}"
+        title = f"util_msg_{counter}"
         print(f"Sending package {title}")
         packet_count += 1
         randomised_plp = np.random.random()
@@ -75,6 +75,9 @@ def handle_connection(addr, fragment_size=500):
     print("Sending finished.")
 
 
+
+
+
 if __name__ == '__main__':
     # PLP Simulation settings
     lossSimualation = False
@@ -94,10 +97,10 @@ if __name__ == '__main__':
     print('Starting up on %s port %s' % server_address)
     sock.bind(server_address)
 
-    # Listening for requests indefinitely
+    sending_data((IP, client_port))
 
     # print('Waiting to receive message')
     # pdata, address = sock.recvfrom(600)
-    connectionThread = threading.Thread(target=handle_connection, args=((IP, client_port),))
-    connectionThread.start()
+    # connectionThread = threading.Thread(target=sending_data, args=((IP, client_port),))
+    # connectionThread.start()
     # print('Received %s bytes from %s' % (len(pdata), address))
