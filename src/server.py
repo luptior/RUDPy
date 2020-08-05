@@ -58,7 +58,6 @@ def sending_data(data, addr, fragment_size=500):
                 continue
             if ack.split(",")[0] == str(pkt.get_seq()):
                 print(f"Acknowledged by: {ack} \n")
-                counter += 1
         else:
             print("Dropped packet\n")
             drop_count += 1
