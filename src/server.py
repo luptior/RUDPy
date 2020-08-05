@@ -31,9 +31,11 @@ def handle_connection(addr, fragment_size=500):
 
     data = np.random.randint(100, size=[5, 6, 5]).tobytes()
 
-    # Fragment and send file fragment_size byte
-    x = 0
     while x < int(len(data) / fragment_size) + 1:
+    seqs = [x for x in range(len(data)//fragment_size+1)]
+    partial_msgs = [ data[x * fragment_size: (x + 1) * fragment_size] for x in seqs]
+
+    for x in seqs:
 
         title = f"title_{x}"
         print(f"Sending package {title}")
@@ -42,7 +44,7 @@ def handle_connection(addr, fragment_size=500):
         if packet_loss_percentage < randomised_plp:
 
             # extract the partial dat to be msg
-            msg = data[x * fragment_size: (x + 1) * fragment_size]
+            msg = partial_msgs[x]
             pkt.make(title, msg)
             serialized_pkt = pkt.serialize()
 
