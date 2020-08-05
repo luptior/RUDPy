@@ -54,9 +54,9 @@ def handle_connection(addr, fragment_size=500):
 
             # Wait for Ack
             try:
-                ack, addr = threadSock.recvfrom(100)
+                ack, _ = threadSock.recvfrom(100)
                 ack = pickle.loads(ack)
-            except:
+            except socket.timeout:
                 print("Time out reached, resending ...%s" % seqNo)
                 continue
             if ack.split(",")[0] == str(pkt.get_seq()):
