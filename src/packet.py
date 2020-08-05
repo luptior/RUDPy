@@ -51,11 +51,9 @@ class packet:
         if isinstance(data, bytes):
             self.msg = data
             self.checksum = hashlib.sha1(self.msg).hexdigest()
-            print(f"Sequence number: {self.seqNo}")
         elif isinstance(data, str):
             self.msg = data.encode("utf-8")
             self.checksum = hashlib.sha1(self.msg).hexdigest()
-            print(f"Sequence number: {self.seqNo}")
 
     def tobytes(self) -> bytes:
         elements = [self.get_checksum(),

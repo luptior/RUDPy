@@ -57,7 +57,7 @@ def handleConnection(addr, ):
                 print("Time out reached, resending ...%s" % x)
                 continue
             if ack.split(",")[0] == str(pkt.seqNo):
-                print(f"Acknowledged by: {ack} ")
+                print(f"Acknowledged by: {ack} \n")
                 x += 1
         else:
             print("Dropped packet\n")
