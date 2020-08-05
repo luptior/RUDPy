@@ -13,11 +13,10 @@ from packet import packet
 
 
 # Connection handler
-def sending_data(addr, fragment_size=500):
+def sending_data(data, addr, fragment_size=500):
     drop_count = 0
     packet_count = 0
 
-    time.sleep(0.5)
     if lossSimualation:
         packet_loss_percentage = float(input("Set PLP (0-99)%: ")) / 100.0
         while packet_loss_percentage < 0 or packet_loss_percentage >= 1:
@@ -28,8 +27,6 @@ def sending_data(addr, fragment_size=500):
     print("Request started at: " + str(datetime.datetime.utcnow()))
     pkt = packet()
     threadSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-    data = np.random.randint(100, size=[5, 6, 5]).tobytes()
 
     seqs = [x for x in range(len(data)//fragment_size+1)]
     partial_msgs = [ data[x * fragment_size: (x + 1) * fragment_size] for x in seqs]
@@ -97,7 +94,8 @@ if __name__ == '__main__':
     print('Starting up on %s port %s' % server_address)
     sock.bind(server_address)
 
-    sending_data((IP, client_port))
+    data = np.random.randint(100, size=[5, 6, 5]).tobytes()
+    sending_data(data, (IP, client_port))
 
     # print('Waiting to receive message')
     # pdata, address = sock.recvfrom(600)
