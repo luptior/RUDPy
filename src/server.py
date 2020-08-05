@@ -13,11 +13,10 @@ from packet import packet
 
 
 # Connection handler
-def handle_connection(addr, fragment_size=500):
+def sending_data(data, addr, fragment_size=500):
     drop_count = 0
     packet_count = 0
 
-    time.sleep(0.5)
     if lossSimualation:
         packet_loss_percentage = float(input("Set PLP (0-99)%: ")) / 100.0
         while packet_loss_percentage < 0 or packet_loss_percentage >= 1:
@@ -25,53 +24,75 @@ def handle_connection(addr, fragment_size=500):
     else:
         packet_loss_percentage = 0
 
-    print("Request started at: " + str(datetime.datetime.utcnow()))
+    received_ack = set([])
+
     pkt = packet()
     threadSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-    data = np.random.randint(100, size=[5, 6, 5]).tobytes()
 
-    # Fragment and send file fragment_size byte
-    x = 0
-    while x < int(len(data) / fragment_size) + 1:
+    seqs = [x for x in range(len(data)//fragment_size+1)]
+    partial_msgs = [ data[x * fragment_size: (x + 1) * fragment_size] for x in seqs]
 
-        title = f"title_{x}"
+    # begin listening for ACK
+    listening_ack_thread = threading.Thread(target=listening_ack, args=(received_ack, set(seqs), threadSock))
+    listening_ack_thread.start()
+
+    # send data
+    for counter in seqs:
+        title = f"util_msg_{counter}"
         print(f"Sending package {title}")
         packet_count += 1
         randomised_plp = np.random.random()
         if packet_loss_percentage < randomised_plp:
-
             # extract the partial dat to be msg
-            msg = data[x * fragment_size: (x + 1) * fragment_size]
+            msg = partial_msgs[counter]
             pkt.make(title, msg)
             serialized_pkt = pkt.serialize()
 
             # Send packet
             threadSock.sendto(serialized_pkt, addr)
             print(f'Sent to {addr}, awaiting acknowledgment..')
-            threadSock.settimeout(10)
-
-            # Wait for Ack
-            try:
-                ack, addr = threadSock.recvfrom(100)
-                ack = pickle.loads(ack)
-            except:
-                print("Time out reached, resending ...%s" % x)
-                continue
-            if ack.split(",")[0] == str(pkt.get_seq()):
-                print(f"Acknowledged by: {ack} \n")
-                x += 1
+            # threadSock.settimeout(10)
         else:
             print("Dropped packet\n")
             drop_count += 1
 
-    print(f"packets served: {packet_count}")
+    time.sleep(1)
+
+    while not received_ack == set(seqs):
+        for seq in (set(seqs) - received_ack):
+            title = f"util_msg_{seq}"
+            print(f"Resending package {title}")
+            randomised_plp = np.random.random()
+            if packet_loss_percentage < randomised_plp:
+                # extract the partial dat to be msg
+                msg = partial_msgs[seq]
+                pkt.make(title, msg)
+                serialized_pkt = pkt.serialize()
+
+                # Send packet
+                threadSock.sendto(serialized_pkt, addr)
+                print(f'Sent to {addr}, awaiting acknowledgment..')
+            else:
+                print("Dropped packet\n")
+                drop_count += 1
+        time.sleep(2)
+
 
     if lossSimualation:
         print(f"Dropped packets:  {str(drop_count)} "
               f"\nComputed drop rate: {float(drop_count) / float(packet_count) * 100.0}")
 
     print("Sending finished.")
+
+
+def listening_ack(received_ack:set, seqs:set, sock):
+    while not received_ack == set(seqs):
+        ack, _ = sock.recvfrom(100)
+        ack = pickle.loads(ack)
+        received_ack.add(int(ack.split(",")[0]))
+        print(f"Acknowledged by: {ack}")
+
 
 
 if __name__ == '__main__':
@@ -93,10 +114,11 @@ if __name__ == '__main__':
     print('Starting up on %s port %s' % server_address)
     sock.bind(server_address)
 
-    # Listening for requests indefinitely
+    data = np.random.randint(100, size=[5, 6, 5]).tobytes()
+    sending_data(data, (IP, client_port))
 
     # print('Waiting to receive message')
     # pdata, address = sock.recvfrom(600)
-    connectionThread = threading.Thread(target=handle_connection, args=((IP, client_port),))
-    connectionThread.start()
+    # connectionThread = threading.Thread(target=sending_data, args=((IP, client_port),))
+    # connectionThread.start()
     # print('Received %s bytes from %s' % (len(pdata), address))
