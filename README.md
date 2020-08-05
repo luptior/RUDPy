@@ -2,8 +2,8 @@
 ![PyPI - Python Version](https://img.shields.io/badge/python-≥3.5-blue.svg)
 
 # Intro:
-A reliable UDP client/server implementation in Python.\
-Updated to Python 3.\
+A reliable UDP client/server implementation in Python. Sender directly sends data when receiver is active.\
+Updated to Python 3.
 
 Dependency:
 ```yaml
