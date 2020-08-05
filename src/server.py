@@ -34,34 +34,34 @@ def handle_connection(addr, fragment_size=500):
     seqs = [x for x in range(len(data)//fragment_size+1)]
     partial_msgs = [ data[x * fragment_size: (x + 1) * fragment_size] for x in seqs]
 
-    for seqNo in seqs:
+    for counter in seqs:
 
-        title = f"title_{seqNo}"
+        title = f"title_{counter}"
         print(f"Sending package {title}")
         packet_count += 1
         randomised_plp = np.random.random()
         if packet_loss_percentage < randomised_plp:
 
             # extract the partial dat to be msg
-            msg = partial_msgs[seqNo]
+            msg = partial_msgs[counter]
             pkt.make(title, msg)
             serialized_pkt = pkt.serialize()
 
             # Send packet
             threadSock.sendto(serialized_pkt, addr)
             print(f'Sent to {addr}, awaiting acknowledgment..')
-            threadSock.settimeout(10)
+            # threadSock.settimeout(10)
 
             # Wait for Ack
             try:
                 ack, _ = threadSock.recvfrom(100)
                 ack = pickle.loads(ack)
             except socket.timeout:
-                print("Time out reached, resending ...%s" % seqNo)
+                print("Time out reached, resending ...%s" % counter)
                 continue
             if ack.split(",")[0] == str(pkt.get_seq()):
                 print(f"Acknowledged by: {ack} \n")
-                seqNo += 1
+                counter += 1
         else:
             print("Dropped packet\n")
             drop_count += 1
