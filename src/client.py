@@ -72,11 +72,11 @@ if __name__ == '__main__':
 
                 data_store += pkt.get_msg()
 
-                print(f"Sequence number: {pkt.get_seq()} Length: {pkt.get_length()}")
+                print(f"Sequence number: {pkt.get_seq()}")
                 # print(f"Server: %s on port {server}")
 
                 # send ack to sender
-                ack_deq_no = f"{pkt.get_seq()},{pkt.get_length()}"
+                ack_deq_no = f"{pkt.get_seq()}"
                 sent = sock.sendto(pickle.dumps(ack_deq_no), server)
                 print(f'Sent ack for {pkt.get_seq()}')
             else:
