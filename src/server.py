@@ -47,8 +47,8 @@ def handle_connection(addr, fragment_size=500):
             serialized_pkt = pkt.serialize()
 
             # Send packet
-            sent = threadSock.sendto(serialized_pkt, addr)
-            print(f'Sent {sent} bytes to {addr}, awaiting acknowledgment..')
+            threadSock.sendto(serialized_pkt, addr)
+            print(f'Sent to {addr}, awaiting acknowledgment..')
             threadSock.settimeout(10)
 
             # Wait for Ack
