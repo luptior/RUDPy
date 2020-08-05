@@ -14,7 +14,6 @@ class packet:
         self.rsc = RSCodec(10)  # default to be 10
         self.delimiter = b"|:|:|" # type bytes
         self.checksum = 0 # type String
-        self.length = str(0)
         self.seqNo = 0
         self.msg = 0
 
@@ -25,20 +24,8 @@ class packet:
         elif isinstance(self.checksum, bytes) or isinstance(self.checksum, bytearray):
             return self.checksum.decode("utf-8")
 
-    # return length as int
-    def get_length(self) -> int:
-        if isinstance(self.length, int):
-            return self.length
-        elif isinstance(self.length, bytes) or isinstance(self.length, bytearray):
-            return int(self.length.decode("utf-8"))
-        elif isinstance(self.length, str):
-            if "b'" in self.length:
-                self.length = eval(self.length)
-                return self.get_length()
-            else:
-                return int(self.length)
 
-    # return length as int
+    # return seq as int
     def get_seq(self) -> int:
         if isinstance(self.seqNo, int):
             return self.seqNo
@@ -63,19 +50,16 @@ class packet:
         self.seqNo = seq
         if isinstance(data, bytes):
             self.msg = data
-            self.length = str(len(data))
             self.checksum = hashlib.sha1(self.msg).hexdigest()
-            print(f"Length: {self.length}\nSequence number: {self.seqNo}")
+            print(f"Sequence number: {self.seqNo}")
         elif isinstance(data, str):
             self.msg = data.encode("utf-8")
-            self.length = str(len(data))
             self.checksum = hashlib.sha1(self.msg).hexdigest()
-            print(f"Length: {self.length}\nSequence number: {self.seqNo}")
+            print(f"Sequence number: {self.seqNo}")
 
     def tobytes(self) -> bytes:
         elements = [self.get_checksum(),
                     str(self.get_seq()),
-                    str(self.get_length()),
                     self.get_msg().decode('utf-8')]
 
         elements = [ x if isinstance(x, bytes) else x.encode('utf-8') for x in elements ]
@@ -90,8 +74,7 @@ class packet:
 
     def deserialize(self, input: bytearray):
         data = self.rsc.decode(input)[0].split(self.delimiter)
-        self.checksum, self.seqNo, self.length, self.msg = [x.decode().encode() for x in data]
-        self.length = str(self.length)
+        self.checksum, self.seqNo, self.msg = [x.decode().encode() for x in data]
         self.seqNo = str(self.seqNo)
         return
 
@@ -106,6 +89,5 @@ if __name__ == '__main__':
     print(data)
     print(pkt.serialize())
     pkt2.deserialize(pkt.serialize())
-    print(pkt2.get_length())
     print(pkt2.get_seq())
     print(pkt2.get_msg())
