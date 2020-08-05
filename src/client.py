@@ -85,9 +85,10 @@ if __name__ == '__main__':
                 print(f"Server: %s on port {server}")
                 continue
 
-            if pkt.get_length() < fragment_size:
-                pkt.seqNo = int(not pkt.get_length())
+            if len(pkt.get_msg()) < fragment_size:
+                # finish the sending if the packet size is smaller
                 break
+
 
     finally:
         print("Closing socket")
