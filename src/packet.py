@@ -59,7 +59,8 @@ class packet:
         elif isinstance(self.msg, str):
             return self.msg.encode("utf-8")
 
-    def make(self, data):
+    def make(self, data, seq: int):
+        self.seqNo = seq
         if isinstance(data, bytes):
             self.msg = data
             self.length = str(len(data))

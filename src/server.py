@@ -41,12 +41,12 @@ def handleConnection(addr, ):
 
             # extract the partial dat to be msg
             msg = data[x * fragment_size: (x + 1) * fragment_size]
-            pkt.make(msg)
+            pkt.make(msg, x)
             serialized_pkt = pkt.serialize()
 
             # Send packet
             sent = threadSock.sendto(serialized_pkt, addr)
-            print(f'Sent {sent} bytes back to {addr}, awaiting acknowledgment..')
+            print(f'Sent {sent} bytes to {addr}, awaiting acknowledgment..')
             threadSock.settimeout(10)
 
             # Wait for Ack
@@ -57,7 +57,6 @@ def handleConnection(addr, ):
                 print("Time out reached, resending ...%s" % x)
                 continue
             if ack.split(",")[0] == str(pkt.seqNo):
-                pkt.seqNo = int(not pkt.seqNo)
                 print(f"Acknowledged by: {ack} ")
                 x += 1
         else:
