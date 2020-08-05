@@ -14,7 +14,7 @@ class packet:
         self.rsc = RSCodec(10)  # default to be 10
         self.delimiter = b"|:|:|" # type bytes
         self.checksum = 0 # type String
-        self.seqNo = 0
+        self.title = 0
         self.msg = 0
 
     # return checksum as string
@@ -24,19 +24,21 @@ class packet:
         elif isinstance(self.checksum, bytes) or isinstance(self.checksum, bytearray):
             return self.checksum.decode("utf-8")
 
+    def get_title(self) -> bytes:
+        if isinstance(self.title, bytes):
+            return self.title
+        elif isinstance(self.title, bytearray):
+            return self.title.decode("utf-8").encode("utf-8")
+        elif isinstance(self.title, str):
+            return self.title.encode("utf-8")
 
     # return seq as int
+    # title should be in format title_seq
     def get_seq(self) -> int:
-        if isinstance(self.seqNo, int):
-            return self.seqNo
-        elif isinstance(self.seqNo, bytes) or isinstance(self.seqNo, bytearray):
-            return int(self.seqNo.decode("utf-8"))
-        elif isinstance(self.seqNo, str):
-            if "b'" in self.seqNo:
-                self.seqNo = eval(self.seqNo)
-                return self.get_seq()
-            else:
-                return int(self.seqNo)
+        try:
+            return int(self.get_title().decode().split("_")[-1])
+        except ValueError:
+            print(self.get_title().decode())
 
     def get_msg(self) -> bytes:
         if isinstance(self.msg, bytes):
@@ -46,8 +48,8 @@ class packet:
         elif isinstance(self.msg, str):
             return self.msg.encode("utf-8")
 
-    def make(self, data, seq: int):
-        self.seqNo = seq
+    def make(self, title: str, data):
+        self.title = title
         if isinstance(data, bytes):
             self.msg = data
             self.checksum = hashlib.sha1(self.msg).hexdigest()
@@ -57,7 +59,7 @@ class packet:
 
     def tobytes(self) -> bytes:
         elements = [self.get_checksum(),
-                    str(self.get_seq()),
+                    self.get_title(),
                     self.get_msg().decode('utf-8')]
 
         elements = [ x if isinstance(x, bytes) else x.encode('utf-8') for x in elements ]
@@ -72,8 +74,7 @@ class packet:
 
     def deserialize(self, input: bytearray):
         data = self.rsc.decode(input)[0].split(self.delimiter)
-        self.checksum, self.seqNo, self.msg = [x.decode().encode() for x in data]
-        self.seqNo = str(self.seqNo)
+        self.checksum, self.title, self.msg = [x.decode().encode() for x in data]
         return
 
 
@@ -82,7 +83,7 @@ if __name__ == '__main__':
     pkt2 = packet()
     data = np.random.randint(100, size = (2,3)).tobytes()
 
-    pkt.make(data)
+    pkt.make("util_data_0", data)
 
     print(data)
     print(pkt.serialize())
