@@ -13,10 +13,10 @@ from packet import packet
 
 
 # Connection handler
-def handle_connection(addr, ):
+def handle_connection(addr, fragment_size=500):
     drop_count = 0
     packet_count = 0
-    fragment_size = 500
+
     time.sleep(0.5)
     if lossSimualation:
         packet_loss_percentage = float(input("Set PLP (0-99)%: ")) / 100.0
