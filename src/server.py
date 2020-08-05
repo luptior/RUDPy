@@ -13,7 +13,7 @@ from packet import packet
 
 
 # Connection handler
-def handleConnection(addr, ):
+def handle_connection(addr, ):
     drop_count = 0
     packet_count = 0
     fragment_size = 500
@@ -34,14 +34,16 @@ def handleConnection(addr, ):
     # Fragment and send file fragment_size byte
     x = 0
     while x < int(len(data) / fragment_size) + 1:
-        print(f"Sending package {x}")
+
+        title = f"title_{x}"
+        print(f"Sending package {title}")
         packet_count += 1
         randomised_plp = np.random.random()
         if packet_loss_percentage < randomised_plp:
 
             # extract the partial dat to be msg
             msg = data[x * fragment_size: (x + 1) * fragment_size]
-            pkt.make(msg, x)
+            pkt.make(title, msg)
             serialized_pkt = pkt.serialize()
 
             # Send packet
@@ -56,7 +58,7 @@ def handleConnection(addr, ):
             except:
                 print("Time out reached, resending ...%s" % x)
                 continue
-            if ack.split(",")[0] == str(pkt.seqNo):
+            if ack.split(",")[0] == str(pkt.get_seq()):
                 print(f"Acknowledged by: {ack} \n")
                 x += 1
         else:
@@ -95,6 +97,6 @@ if __name__ == '__main__':
 
     # print('Waiting to receive message')
     # pdata, address = sock.recvfrom(600)
-    connectionThread = threading.Thread(target=handleConnection, args=((IP, client_port),))
+    connectionThread = threading.Thread(target=handle_connection, args=((IP, client_port),))
     connectionThread.start()
     # print('Received %s bytes from %s' % (len(pdata), address))
